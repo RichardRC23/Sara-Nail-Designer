@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Entre ou crie sua conta para pedir um horário com Sara Nail Designer.">
+  <meta name="theme-color" content="#641f32">
+  <title>Agendamento | Sara Nail Designer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="agendamento.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="supabase-config.js"></script>
+  <script defer src="agendamento.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <header class="topo" id="inicio">
+    <div class="container navegacao">
+      <a class="marca" href="index.html" aria-label="Sara Nail Designer — página inicial">
+        <img class="logo logo-topo" src="assets/logo-sara.png" alt="Sara Nail Designer">
+      </a>
+      <button class="menu-botao" aria-expanded="false" aria-controls="menu">
+        <i></i><i></i><i></i><span class="sr-only">Abrir menu</span>
+      </button>
+      <nav id="menu" class="menu" aria-label="Navegação principal">
+        <a href="index.html#sobre">Sobre</a>
+        <a href="index.html#servicos">Serviços</a>
+        <a href="index.html#inspiracoes">Inspirações</a>
+        <a class="menu-cta" href="agendamento.html" aria-current="page">Agendamento</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo" class="portal-agendamento">
+    <section class="portal-intro container revelar">
+      <p class="rotulo"><span></span>Seu próximo momento começa aqui</p>
+      <h1>Agende do <em>seu jeito.</em></h1>
+      <p>Entre ou crie sua conta para enviar um pedido e acompanhar o retorno da Sara em um só lugar.</p>
+    </section>
+
+    <section class="portal-conteudo container" aria-label="Acesso e agendamento">
+      <div class="portal-card revelar" id="authCard">
+        <div class="portal-card-cabecalho">
+          <p class="rotulo"><span></span>Área da cliente</p>
+          <h2 id="authTitle">Que bom ter você aqui</h2>
+          <p>Use seu email para acessar seus pedidos de horário.</p>
+        </div>
+
+        <div class="auth-abas" id="authTabs" role="tablist" aria-label="Escolha uma opção">
+          <button id="loginTab" type="button" role="tab" aria-selected="true" aria-controls="loginPanel">Entrar</button>
+          <button id="signupTab" type="button" role="tab" aria-selected="false" aria-controls="signupPanel">Criar conta</button>
+        </div>
+
+        <div id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
+          <form id="loginForm" class="auth-form">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+            <label for="loginPassword">Senha</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" required>
+            <button class="botao" type="submit">Entrar na minha conta <b>↗</b></button>
+            <button class="texto-botao" id="resetPassword" type="button">Esqueci minha senha</button>
+          </form>
+        </div>
+
+        <div id="recoveryPanel" hidden>
+          <form id="recoveryForm" class="auth-form">
+            <label for="recoveryEmail">Email da sua conta</label>
+            <input id="recoveryEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+            <button class="botao" type="submit">Enviar link de recuperação <b>↗</b></button>
+            <button class="texto-botao" id="backToLogin" type="button">Voltar para entrar</button>
+          </form>
+        </div>
+
+        <div id="newPasswordPanel" hidden>
+          <form id="newPasswordForm" class="auth-form">
+            <label for="newPassword">Nova senha</label>
+            <input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Pelo menos 8 caracteres" required>
+            <button class="botao" type="submit">Salvar nova senha <b>↗</b></button>
+          </form>
+        </div>
+
+        <div id="signupPanel" role="tabpanel" aria-labelledby="signupTab" hidden>
+          <form id="signupForm" class="auth-form">
+            <label for="signupName">Como podemos chamar você?</label>
+            <input id="signupName" name="name" type="text" autocomplete="name" placeholder="Seu nome" maxlength="100" required>
+            <label for="signupEmail">Email</label>
+            <input id="signupEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+            <label for="signupPassword">Crie uma senha</label>
+            <input id="signupPassword" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Pelo menos 8 caracteres" required>
+            <button class="botao" type="submit">Criar minha conta <b>↗</b></button>
+            <p class="nota-privacidade">Ao criar a conta, você poderá ver seus pedidos de agendamento neste dispositivo ou em outro.</p>
+          </form>
+        </div>
+        <p class="portal-status" id="authStatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="portal-card portal-dashboard" id="dashboard" hidden>
+        <div class="dashboard-topo">
+          <div>
+            <p class="rotulo"><span></span>Seu espaço</p>
+            <h2>Olá, <span id="customerName">que bom ver você</span></h2>
+            <p class="email-cliente" id="customerEmail"></p>
+          </div>
+          <button id="signOut" class="texto-botao" type="button">Sair da conta</button>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="pedido-box" aria-labelledby="pedidoTitulo">
+            <p class="rotulo"><span></span>Novo pedido</p>
+            <h3 id="pedidoTitulo">Vamos encontrar seu horário</h3>
+            <p class="pedido-explicacao">Escolha o serviço e indique uma data e um horário de preferência. A Sara confirmará a disponibilidade antes do agendamento.</p>
+            <form id="appointmentForm" class="auth-form">
+              <label for="service">Serviço</label>
+              <select id="service" name="service" required>
+                <option value="" disabled selected>Escolha um serviço</option>
+                <option value="Esmaltação em gel">Esmaltação em gel</option>
+                <option value="Nail art personalizada">Nail art personalizada</option>
+                <option value="Alongamento">Alongamento</option>
+              </select>
+              <div class="data-horario">
+                <div><label for="appointmentDate">Data desejada</label><input id="appointmentDate" name="date" type="date" required></div>
+                <div><label for="appointmentTime">Horário desejado</label><input id="appointmentTime" name="time" type="time" required></div>
+              </div>
+              <label for="appointmentNotes">Observação <span class="opcional">(opcional)</span></label>
+              <textarea id="appointmentNotes" name="notes" rows="3" maxlength="1000" placeholder="Conte um detalhe que ajude a Sara a se preparar"></textarea>
+              <p class="nota-privacidade">Não inclua dados pessoais sensíveis nas observações. O horário só fica confirmado após o retorno da Sara.</p>
+              <button class="botao" type="submit">Enviar pedido de horário <b>↗</b></button>
+            </form>
+            <p class="portal-status" id="appointmentStatus" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="pedidos-box" aria-labelledby="pedidosTitulo">
+            <p class="rotulo"><span></span>Seu histórico</p>
+            <h3 id="pedidosTitulo">Pedidos de horário</h3>
+            <p class="pedido-explicacao">Aqui você acompanha o status de cada solicitação.</p>
+            <div id="appointmentsList" class="pedidos-lista" aria-live="polite"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container rodape">
+      <a class="marca marca-rodape" href="index.html" aria-label="Sara Nail Designer — página inicial"><img class="logo logo-rodape" src="assets/logo-sara.png" alt="Sara Nail Designer"></a>
+      <p>Beleza, cuidado e personalidade em cada detalhe.</p>
+      <a href="index.html">Voltar ao site ↑</a>
+    </div>
+    <div class="container direitos">© <span id="ano"></span> Sara Nail Designer · Feito com carinho.</div>
+  </footer>
+</body>
+</html>
