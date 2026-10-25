@@ -9,6 +9,10 @@ const signupPanel = document.querySelector('#signupPanel');
 const recoveryPanel = document.querySelector('#recoveryPanel');
 const newPasswordPanel = document.querySelector('#newPasswordPanel');
 const authTabs = document.querySelector('#authTabs');
+const customerTabs = [...document.querySelectorAll('.cliente-aba')];
+const customerAccountName = document.querySelector('#customerAccountName');
+const customerAccountInitial = document.querySelector('#customerAccountInitial');
+const customerAccountPhoto = document.querySelector('#customerAccountPhoto');
 let supabaseClient;
 let recoveryFlow = false;
 
@@ -77,7 +81,14 @@ const configureDateMinimum = () => {
 const serviceFromQuery = new Map([
   ['gel', 'Esmaltação em gel'],
   ['nail-art', 'Nail art personalizada'],
-  ['alongamento', 'Alongamento']
+  ['alongamento', 'Alongamento'],
+  ['banho-gel', 'Banho de gel'],
+  ['molde-f1', 'Molde F1'],
+  ['gel-tips', 'Gel na tips'],
+  ['postica-realista', 'Postiça realista'],
+  ['manutencao-molde-f1', 'Manutenção — Molde F1'],
+  ['manutencao-gel-tips', 'Manutenção — Gel na tips'],
+  ['manutencao-banho-gel', 'Manutenção — Banho de gel']
 ]);
 const requestedService = serviceFromQuery.get(new URLSearchParams(window.location.search).get('servico'));
 if (requestedService) document.querySelector('#service').value = requestedService;
@@ -87,14 +98,256 @@ const showDashboard = (session) => {
   const user = session?.user;
   authCard.hidden = Boolean(user);
   dashboard.hidden = !user;
-  if (!user) return;
+  if (!user) {
+    customerAccountName.textContent = 'Área da cliente';
+    customerAccountInitial.textContent = '♡';
+    customerAccountPhoto.hidden = true;
+    customerAccountInitial.hidden = false;
+    return;
+  }
 
   const metadataName = user.user_metadata?.full_name;
   const fallbackName = user.email?.split('@')[0] || 'que bom ver você';
+  customerAccountName.textContent = (metadataName || fallbackName).split(' ')[0];
+  customerAccountInitial.textContent = (metadataName || fallbackName).trim().charAt(0).toUpperCase();
+  customerAccountPhoto.hidden = true;
+  customerAccountInitial.hidden = false;
   document.querySelector('#customerName').textContent = metadataName || fallbackName;
   document.querySelector('#customerEmail').textContent = user.email || '';
+  document.querySelector('#profileName').value = metadataName || '';
+  document.querySelector('#profileEmail').value = user.email || '';
+  void loadProfilePhoto(user);
   void loadAppointments();
 };
+
+const selectCustomerPanel = (panelId) => {
+  customerTabs.forEach((tab) => {
+    const selected = tab.getAttribute('aria-controls') === panelId;
+    tab.setAttribute('aria-selected', String(selected));
+    document.querySelector(`#${tab.getAttribute('aria-controls')}`).hidden = !selected;
+  });
+};
+customerTabs.forEach((tab) => tab.addEventListener('click', () => selectCustomerPanel(tab.getAttribute('aria-controls'))));
+
+async function loadProfilePhoto(user) {
+  const avatar = document.querySelector('#customerAvatar');
+  const path = user.user_metadata?.avatar_path;
+  avatar.textContent = (user.user_metadata?.full_name || user.email || 'S').trim().charAt(0).toUpperCase();
+  avatar.classList.remove('com-foto');
+  avatar.style.removeProperty('--avatar-foto');
+  if (!path) return;
+  const { data, error } = await supabaseClient.storage.from('sara-avatars').createSignedUrl(path, 60 * 60);
+  if (error || !data?.signedUrl) return;
+  avatar.style.setProperty('--avatar-foto', `url("${data.signedUrl}")`);
+  avatar.classList.add('com-foto');
+  if (customerAccountPhoto) {
+    customerAccountPhoto.onload = () => {
+      customerAccountPhoto.hidden = false;
+      customerAccountInitial.hidden = true;
+    };
+    customerAccountPhoto.onerror = () => {
+      customerAccountPhoto.hidden = true;
+      customerAccountInitial.hidden = false;
+    };
+    customerAccountPhoto.src = data.signedUrl;
+  }
+}
+
+document.querySelector('#profileForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const values = new FormData(form);
+  const name = String(values.get('name')).trim();
+  const email = String(values.get('email')).trim();
+  setBusy(form, true);
+  showMessage(document.querySelector('#profileStatus'), 'Salvando suas informações…');
+  const { data, error } = await supabaseClient.auth.updateUser({ email, data: { full_name: name } });
+  setBusy(form, false);
+  if (error) {
+    showMessage(document.querySelector('#profileStatus'), friendlyAuthError(error));
+    return;
+  }
+  const updatedUser = data.user;
+  document.querySelector('#customerName').textContent = updatedUser.user_metadata?.full_name || name;
+  document.querySelector('#customerEmail').textContent = updatedUser.email || email;
+  document.querySelector('#profileName').value = updatedUser.user_metadata?.full_name || name;
+  document.querySelector('#profileEmail').value = updatedUser.email || email;
+  showMessage(document.querySelector('#profileStatus'), updatedUser.new_email
+    ? 'Nome atualizado. Para concluir a troca do email, confirme a mensagem enviada pelo Supabase.'
+    : 'Seus dados foram atualizados com sucesso.');
+});
+
+document.querySelector('#profilePasswordForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const values = new FormData(form);
+  const password = String(values.get('password'));
+  if (password !== String(values.get('passwordConfirm'))) {
+    showMessage(document.querySelector('#passwordStatus'), 'As senhas não são iguais. Confira e tente novamente.');
+    return;
+  }
+  setBusy(form, true);
+  showMessage(document.querySelector('#passwordStatus'), 'Atualizando sua senha…');
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  setBusy(form, false);
+  if (error) {
+    showMessage(document.querySelector('#passwordStatus'), friendlyAuthError(error));
+    return;
+  }
+  form.reset();
+  showMessage(document.querySelector('#passwordStatus'), 'Senha atualizada com sucesso.');
+});
+
+const photoInput = document.querySelector('#profilePhoto');
+const cropDialog = document.querySelector('#photoCropDialog');
+const cropCanvas = document.querySelector('#photoCropCanvas');
+const cropContext = cropCanvas.getContext('2d');
+const zoomInput = document.querySelector('#photoZoom');
+let cropImage;
+let cropZoom = 1;
+let cropOffset = { x: 0, y: 0 };
+let dragStart;
+
+const drawPhotoCrop = () => {
+  if (!cropImage) return;
+  const size = cropCanvas.width;
+  const scale = Math.max(size / cropImage.width, size / cropImage.height) * cropZoom;
+  const width = cropImage.width * scale;
+  const height = cropImage.height * scale;
+  const minX = size - width;
+  const minY = size - height;
+  cropOffset.x = Math.min(0, Math.max(minX, cropOffset.x));
+  cropOffset.y = Math.min(0, Math.max(minY, cropOffset.y));
+  cropContext.clearRect(0, 0, size, size);
+  cropContext.drawImage(cropImage, cropOffset.x, cropOffset.y, width, height);
+};
+
+photoInput.addEventListener('change', async (event) => {
+  const file = event.currentTarget.files?.[0];
+  if (!file) return;
+  const status = document.querySelector('#photoStatus');
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    showMessage(status, 'Escolha uma imagem JPG, PNG ou WebP.');
+    photoInput.value = '';
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showMessage(status, 'A imagem precisa ter até 10 MB.');
+    photoInput.value = '';
+    return;
+  }
+  try {
+    cropImage = await createImageBitmap(file);
+    cropZoom = 1;
+    zoomInput.value = '1';
+    cropOffset = { x: 0, y: 0 };
+    drawPhotoCrop();
+    showMessage(status, '');
+    cropDialog.showModal();
+  } catch {
+    showMessage(status, 'Não conseguimos abrir essa imagem. Escolha outro arquivo e tente novamente.');
+    photoInput.value = '';
+  }
+});
+
+zoomInput.addEventListener('input', () => {
+  const previousZoom = cropZoom;
+  cropZoom = Number(zoomInput.value);
+  if (cropImage && previousZoom) {
+    const ratio = cropZoom / previousZoom;
+    const center = cropCanvas.width / 2;
+    cropOffset.x = center - (center - cropOffset.x) * ratio;
+    cropOffset.y = center - (center - cropOffset.y) * ratio;
+  }
+  drawPhotoCrop();
+});
+
+cropCanvas.addEventListener('pointerdown', (event) => {
+  dragStart = { x: event.clientX, y: event.clientY, offsetX: cropOffset.x, offsetY: cropOffset.y };
+  cropCanvas.setPointerCapture(event.pointerId);
+});
+cropCanvas.addEventListener('pointermove', (event) => {
+  if (!dragStart) return;
+  const scaleX = cropCanvas.width / cropCanvas.getBoundingClientRect().width;
+  const scaleY = cropCanvas.height / cropCanvas.getBoundingClientRect().height;
+  cropOffset.x = dragStart.offsetX + (event.clientX - dragStart.x) * scaleX;
+  cropOffset.y = dragStart.offsetY + (event.clientY - dragStart.y) * scaleY;
+  drawPhotoCrop();
+});
+cropCanvas.addEventListener('pointerup', () => { dragStart = null; });
+cropCanvas.addEventListener('pointercancel', () => { dragStart = null; });
+
+const closePhotoCrop = () => {
+  cropDialog.close();
+  cropImage?.close?.();
+  cropImage = null;
+  photoInput.value = '';
+};
+document.querySelector('#cancelPhotoCrop').addEventListener('click', closePhotoCrop);
+document.querySelector('#closePhotoCrop').addEventListener('click', closePhotoCrop);
+cropDialog.addEventListener('close', () => {
+  cropImage?.close?.();
+  cropImage = null;
+  photoInput.value = '';
+});
+
+document.querySelector('#savePhotoCrop').addEventListener('click', async () => {
+  const saveButton = document.querySelector('#savePhotoCrop');
+  const status = document.querySelector('#photoStatus');
+  saveButton.disabled = true;
+  saveButton.setAttribute('aria-busy', 'true');
+  showMessage(status, 'Preparando sua foto…');
+  cropCanvas.toBlob(async (blob) => {
+    if (!blob) {
+      showMessage(status, 'Não conseguimos preparar essa imagem. Tente escolher outra.');
+      saveButton.disabled = false;
+      saveButton.removeAttribute('aria-busy');
+      return;
+    }
+    if (blob.size > 3 * 1024 * 1024) {
+      showMessage(status, 'Essa imagem ficou muito grande. Diminua o zoom ou escolha outra foto.');
+      saveButton.disabled = false;
+      saveButton.removeAttribute('aria-busy');
+      return;
+    }
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      showMessage(status, 'Sua sessão expirou. Entre novamente para atualizar a foto.');
+      saveButton.disabled = false;
+      saveButton.removeAttribute('aria-busy');
+      return;
+    }
+    const path = `${user.id}/perfil-${Date.now()}.jpg`;
+    const { error: uploadError } = await supabaseClient.storage.from('sara-avatars').upload(path, blob, {
+      contentType: 'image/jpeg', cacheControl: '3600', upsert: false
+    });
+    if (uploadError) {
+      const detail = String(uploadError.message || '').toLowerCase();
+      if (detail.includes('row-level security') || detail.includes('bucket not found') || uploadError.statusCode === '404') {
+        showMessage(status, 'O espaço seguro das fotos ainda não foi criado. Execute o arquivo supabase/schema.sql no SQL Editor do Supabase e tente novamente.');
+      } else if (detail.includes('payload too large') || uploadError.statusCode === '413') {
+        showMessage(status, 'A foto ficou acima do limite permitido. Diminua o zoom e tente novamente.');
+      } else {
+        showMessage(status, `Não foi possível enviar a foto: ${uploadError.message || 'verifique a conexão e as permissões do Supabase.'}`);
+      }
+      saveButton.disabled = false;
+      saveButton.removeAttribute('aria-busy');
+      return;
+    }
+    const { data, error } = await supabaseClient.auth.updateUser({ data: { avatar_path: path } });
+    if (error) {
+      showMessage(status, 'A foto foi enviada, mas não conseguimos vinculá-la ao perfil. Tente novamente.');
+      saveButton.disabled = false;
+      saveButton.removeAttribute('aria-busy');
+      return;
+    }
+    await loadProfilePhoto(data.user);
+    showMessage(status, 'Foto de perfil atualizada!');
+    saveButton.disabled = false;
+    saveButton.removeAttribute('aria-busy');
+    closePhotoCrop();
+  }, 'image/jpeg', 0.9);
+});
 
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -286,7 +539,7 @@ if (!config.url || !config.publishableKey || !window.supabase?.createClient) {
   document.querySelectorAll('#loginForm input, #signupForm input, #recoveryForm input, #newPasswordForm input, #appointmentForm input, #appointmentForm select, #appointmentForm textarea, #authCard button').forEach((field) => {
     if (!field.matches('.auth-abas button, #backToLogin')) field.disabled = true;
   });
-  showMessage(authStatus, 'Estamos preparando esta área. Falta conectar o projeto Supabase e executar o schema de segurança.');
+  showMessage(authStatus, 'Esta área ainda não está conectada. Configure a URL e a chave pública do projeto em supabase-config.js e execute supabase/schema.sql no painel do Supabase.');
 } else {
   supabaseClient = window.supabase.createClient(config.url, config.publishableKey);
   supabaseClient.auth.onAuthStateChange((event, session) => {

@@ -27,6 +27,8 @@
         <a href="index.html#sobre">Sobre</a>
         <a href="index.html#servicos">Serviços</a>
         <a href="index.html#inspiracoes">Inspirações</a>
+        <a class="menu-instagram" href="https://www.instagram.com/beauty_saraariane/" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="instagram-ponto" cx="17.5" cy="6.5" r="1"/></svg>Instagram</a>
+        <a class="menu-cliente" id="customerAccountLink" href="#area-cliente" aria-label="Acessar área da cliente"><span class="menu-avatar"><span class="menu-avatar-inicial" id="customerAccountInitial">C</span><img id="customerAccountPhoto" alt="" hidden></span><span class="menu-cliente-nome" id="customerAccountName">Área da cliente</span></a>
         <a class="menu-cta" href="agendamento.html" aria-current="page">Agendamento</a>
       </nav>
     </div>
@@ -39,7 +41,19 @@
       <p>Entre ou crie sua conta para enviar um pedido e acompanhar o retorno da Sara em um só lugar.</p>
     </section>
 
-    <section class="portal-conteudo container" aria-label="Acesso e agendamento">
+    <section class="localizacao localizacao-agendamento container revelar" aria-labelledby="localizacaoTitulo">
+      <div class="localizacao-texto">
+        <p class="rotulo"><span></span>Local do atendimento</p>
+        <h2 id="localizacaoTitulo">Campo Grande, <em>Rio de Janeiro</em></h2>
+        <p>O endereço exato deve ser confirmado com a Sara antes do agendamento.</p>
+      </div>
+      <div class="localizacao-acoes">
+        <a class="localizacao-mapa" href="https://www.google.com/maps/search/?api=1&amp;query=Campo+Grande%2C+Rio+de+Janeiro%2C+RJ" target="_blank" rel="noopener noreferrer">Ver região no mapa ↗</a>
+        <a class="localizacao-contato" href="https://wa.me/5521996400153?text=Ol%C3%A1%2C%20Sara!%20Qual%20%C3%A9%20o%20endere%C3%A7o%20do%20atendimento%20em%20Campo%20Grande%3F" target="_blank" rel="noopener noreferrer">Consultar endereço pelo WhatsApp</a>
+      </div>
+    </section>
+
+    <section class="portal-conteudo container" id="area-cliente" aria-label="Acesso e agendamento">
       <div class="portal-card revelar" id="authCard">
         <div class="portal-card-cabecalho">
           <p class="rotulo"><span></span>Área da cliente</p>
@@ -105,25 +119,45 @@
           <button id="signOut" class="texto-botao" type="button">Sair da conta</button>
         </div>
 
+        <div class="cliente-resumo" aria-label="Resumo da sua área">
+          <article class="resumo-cartao"><span aria-hidden="true">✦</span><div><strong>Seu cuidado, no seu tempo</strong><p>Acompanhe tudo por aqui</p></div></article>
+          <article class="resumo-cartao"><span aria-hidden="true">♡</span><div><strong>Atendimento especial</strong><p>Fale com a Sara quando precisar</p></div></article>
+        </div>
+
+        <div class="cliente-abas" role="tablist" aria-label="Seções da sua área">
+          <button class="cliente-aba" id="appointmentsTab" type="button" role="tab" aria-selected="true" aria-controls="appointmentsPanel"><span aria-hidden="true">▦</span> Agendamentos</button>
+          <button class="cliente-aba" id="subscriptionsTab" type="button" role="tab" aria-selected="false" aria-controls="subscriptionsPanel"><span aria-hidden="true">♡</span> Assinaturas</button>
+          <button class="cliente-aba" id="profileTab" type="button" role="tab" aria-selected="false" aria-controls="profilePanel"><span aria-hidden="true">◉</span> Meu perfil</button>
+        </div>
+
+        <div id="appointmentsPanel" class="cliente-painel" role="tabpanel" aria-labelledby="appointmentsTab">
         <div class="dashboard-grid">
           <section class="pedido-box" aria-labelledby="pedidoTitulo">
-            <p class="rotulo"><span></span>Novo pedido</p>
+            <div class="pedido-etiqueta"><span class="pedido-icone" aria-hidden="true">✦</span><p class="rotulo"><span></span>Novo pedido</p></div>
             <h3 id="pedidoTitulo">Vamos encontrar seu horário</h3>
             <p class="pedido-explicacao">Escolha o serviço e indique uma data e um horário de preferência. A Sara confirmará a disponibilidade antes do agendamento.</p>
             <form id="appointmentForm" class="auth-form">
               <label for="service">Serviço</label>
-              <select id="service" name="service" required>
+              <div class="servico-select-wrap"><span class="servico-select-icone" aria-hidden="true">✧</span><select id="service" name="service" required>
                 <option value="" disabled selected>Escolha um serviço</option>
-                <option value="Esmaltação em gel">Esmaltação em gel</option>
-                <option value="Nail art personalizada">Nail art personalizada</option>
-                <option value="Alongamento">Alongamento</option>
-              </select>
+                <optgroup label="Serviços">
+                  <option value="Banho de gel">Banho de gel — R$ 60,00</option>
+                  <option value="Molde F1">Molde F1 — R$ 90,00</option>
+                  <option value="Gel na tips">Gel na tips — R$ 80,00</option>
+                  <option value="Postiça realista">Postiça realista — R$ 45,00</option>
+                </optgroup>
+                <optgroup label="Manutenção">
+                  <option value="Manutenção — Molde F1">Molde F1 — R$ 70,00</option>
+                  <option value="Manutenção — Gel na tips">Gel na tips — R$ 65,00</option>
+                  <option value="Manutenção — Banho de gel">Banho de gel — R$ 50,00</option>
+                </optgroup>
+              </select><span class="servico-select-seta" aria-hidden="true">⌄</span></div>
               <div class="data-horario">
                 <div><label for="appointmentDate">Data desejada</label><input id="appointmentDate" name="date" type="date" required></div>
                 <div><label for="appointmentTime">Horário desejado</label><input id="appointmentTime" name="time" type="time" required></div>
               </div>
               <label for="appointmentNotes">Observação <span class="opcional">(opcional)</span></label>
-              <textarea id="appointmentNotes" name="notes" rows="3" maxlength="1000" placeholder="Conte um detalhe que ajude a Sara a se preparar"></textarea>
+              <textarea id="appointmentNotes" name="notes" rows="3" maxlength="1000" placeholder="Se quiser, informe extras como remoção, encapsulada ou pedraria"></textarea>
               <p class="nota-privacidade">Não inclua dados pessoais sensíveis nas observações. O horário só fica confirmado após o retorno da Sara.</p>
               <button class="botao" type="submit">Enviar pedido de horário <b>↗</b></button>
             </form>
@@ -131,12 +165,72 @@
           </section>
 
           <section class="pedidos-box" aria-labelledby="pedidosTitulo">
-            <p class="rotulo"><span></span>Seu histórico</p>
-            <h3 id="pedidosTitulo">Pedidos de horário</h3>
+            <div class="historico-cabecalho"><p class="rotulo"><span></span>Seu histórico</p><span class="historico-icone" aria-hidden="true">♡</span></div>
+            <h3 id="pedidosTitulo">Seus pedidos</h3>
             <p class="pedido-explicacao">Aqui você acompanha o status de cada solicitação.</p>
             <div id="appointmentsList" class="pedidos-lista" aria-live="polite"></div>
           </section>
         </div>
+        </div>
+
+        <section id="subscriptionsPanel" class="cliente-painel assinaturas-painel" role="tabpanel" aria-labelledby="subscriptionsTab" hidden>
+          <div class="assinaturas-conteudo">
+            <span class="assinaturas-selo" aria-hidden="true">♡</span>
+            <p class="rotulo"><span></span>Um carinho a mais</p>
+            <h3>Seus próximos benefícios</h3>
+            <p>Em breve, você poderá acompanhar por aqui os pacotes e as assinaturas da Sara, com seus benefícios e validade em um só lugar.</p>
+            <span class="assinaturas-em-breve">Novidades em breve</span>
+          </div>
+        </section>
+
+        <section id="profilePanel" class="cliente-painel perfil-painel" role="tabpanel" aria-labelledby="profileTab" hidden>
+          <div class="perfil-cabecalho">
+            <div><p class="rotulo"><span></span>Seu perfil</p><h3>Seus dados, do seu jeito</h3><p class="pedido-explicacao">Atualize as informações da sua conta com segurança.</p></div>
+          </div>
+          <div class="perfil-layout">
+            <section class="perfil-foto-card" aria-labelledby="fotoTitulo">
+              <div class="avatar-cliente" id="customerAvatar" aria-hidden="true">S</div>
+              <h4 id="fotoTitulo">Sua foto de perfil</h4>
+              <p>Escolha uma imagem para deixar sua área com a sua cara.</p>
+              <label class="foto-escolher" for="profilePhoto">Escolher foto</label>
+              <input id="profilePhoto" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp">
+              <p class="foto-ajuda">JPG, PNG ou WebP · até 10 MB</p>
+              <p class="portal-status" id="photoStatus" role="status" aria-live="polite"></p>
+            </section>
+            <div class="perfil-formularios">
+              <form id="profileForm" class="auth-form perfil-form">
+                <h4>Informações pessoais</h4>
+                <label for="profileName">Nome de usuário</label>
+                <input id="profileName" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Seu nome" required>
+                <label for="profileEmail">Email</label>
+                <input id="profileEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+                <p class="nota-privacidade">A atualização do email pode exigir confirmação enviada à nova caixa de entrada.</p>
+                <button class="botao" type="submit">Salvar meus dados <b>↗</b></button>
+                <p class="portal-status" id="profileStatus" role="status" aria-live="polite"></p>
+              </form>
+              <form id="profilePasswordForm" class="auth-form perfil-form">
+                <h4>Alterar senha</h4>
+                <label for="profilePassword">Nova senha</label>
+                <input id="profilePassword" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Pelo menos 8 caracteres" required>
+                <label for="profilePasswordConfirm">Confirme a nova senha</label>
+                <input id="profilePasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite novamente" required>
+                <button class="botao" type="submit">Atualizar senha <b>↗</b></button>
+                <p class="portal-status" id="passwordStatus" role="status" aria-live="polite"></p>
+              </form>
+            </div>
+          </div>
+          <dialog class="foto-recorte" id="photoCropDialog" aria-labelledby="cropTitle">
+            <button class="recorte-fechar" id="closePhotoCrop" type="button" aria-label="Fechar ajuste da foto">×</button>
+            <div class="recorte-conteudo">
+              <p class="rotulo"><span></span>Foto do perfil</p>
+              <h3 id="cropTitle">Ajuste sua foto</h3>
+              <p class="recorte-instrucao">Arraste a imagem para posicionar e use o controle para aproximar.</p>
+              <div class="recorte-quadro"><canvas id="photoCropCanvas" width="512" height="512" aria-label="Prévia do enquadramento da foto"></canvas></div>
+              <label class="zoom-label" for="photoZoom">Zoom <input id="photoZoom" type="range" min="1" max="3" step="0.01" value="1"></label>
+              <div class="recorte-acoes"><button class="recorte-cancelar" id="cancelPhotoCrop" type="button">Cancelar</button><button class="botao" id="savePhotoCrop" type="button">Salvar foto <b>↗</b></button></div>
+            </div>
+          </dialog>
+        </section>
       </div>
     </section>
   </main>

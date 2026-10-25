@@ -7,6 +7,8 @@
   <meta name="theme-color" content="#641f32">
   <title>Sara Nail Designer</title>
   <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="supabase-config.js"></script>
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -24,6 +26,8 @@
         <a href="#sobre">Sobre</a>
         <a href="#servicos">Serviços</a>
         <a href="#inspiracoes">Inspirações</a>
+        <a class="menu-instagram" href="https://www.instagram.com/beauty_saraariane/" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="instagram-ponto" cx="17.5" cy="6.5" r="1"/></svg>Instagram</a>
+        <a class="menu-cliente" id="customerAccountLink" href="agendamento.html#area-cliente" aria-label="Acessar área da cliente"><span class="menu-avatar"><span class="menu-avatar-inicial" id="customerAccountInitial">C</span><img id="customerAccountPhoto" alt="" hidden></span><span class="menu-cliente-nome" id="customerAccountName">Área da cliente</span></a>
         <a class="menu-cta" href="agendamento.html">Agendar</a>
       </nav>
     </div>
@@ -39,11 +43,12 @@
           <a class="botao" href="agendamento.html">Escolher meu estilo <b>↗</b></a>
           <a class="link-texto" href="#inspiracoes">Ver inspirações ↓</a>
           <a class="link-contato-hero" href="https://wa.me/5521996400153?text=Ol%C3%A1%2C%20Sara!%20Vim%20pelo%20site%20e%20gostaria%20de%20saber%20mais." target="_blank" rel="noopener noreferrer">Tirar uma dúvida pelo WhatsApp</a>
+          <a class="link-instagram-hero" href="https://www.instagram.com/beauty_saraariane/" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="instagram-ponto" cx="17.5" cy="6.5" r="1"/></svg>Ver Instagram da Sara</a>
         </div>
         <ul class="diferenciais"><li>Design personalizado</li><li>Atendimento com hora marcada</li></ul>
       </div>
       <div class="hero-imagem revelar atraso">
-        <div class="arco"><img src="assets/hero-nails.png" alt="Mão com unhas amendoadas em nail art vinho, rosé e dourado"></div>
+        <div class="arco"><img src="assets/hero-sara-real.jpeg" alt="Trabalho real da Sara: unhas rosadas e vinho com detalhes marmorizados e dourados"></div>
         <div class="selo"><span>feito</span><strong>para você</strong></div>
         <i class="brilho b1">✦</i><i class="brilho b2">✦</i>
       </div>
@@ -64,15 +69,41 @@
     <section class="servicos secao" id="servicos">
       <div class="container">
         <div class="cabecalho-secao claro revelar">
-          <div><p class="rotulo"><span></span>Escolha seu ritual</p><h2>Um cuidado para<br><em>cada fase</em></h2></div>
-          <p>Opções que acompanham seu estilo, seu tempo e a ocasião.</p>
+          <div><p class="rotulo"><span></span>Serviços e valores</p><h2>Seu próximo cuidado,<br><em>com preço claro.</em></h2></div>
+          <p>Escolha seu procedimento e consulte a Sara para confirmar os detalhes do atendimento.</p>
         </div>
-        <div class="cards-servicos">
-          <article class="servico revelar"><small>01</small><b class="icone">◡</b><h3>Esmaltação em gel</h3><p>Cor intensa, brilho bonito e acabamento cuidadoso para a rotina.</p><span class="preco-servico">Valor sob consulta</span><a href="agendamento.html?servico=gel">Tenho interesse →</a></article>
-          <article class="servico destaque revelar"><small>02</small><b class="icone">✦</b><h3>Nail art personalizada</h3><p>Composição criada a partir das suas referências, cores e personalidade.</p><span class="preco-servico">Valor sob consulta</span><a href="agendamento.html?servico=nail-art">Tenho interesse →</a></article>
-          <article class="servico revelar"><small>03</small><b class="icone">⌒</b><h3>Alongamento</h3><p>Formato e comprimento escolhidos para unir elegância e conforto.</p><span class="preco-servico">Valor sob consulta</span><a href="agendamento.html?servico=alongamento">Tenho interesse →</a></article>
+        <div class="precos-categorias">
+          <article class="preco-grupo revelar">
+            <p class="preco-categoria">01 · Serviços</p>
+            <h3>Procedimentos</h3>
+            <ul class="lista-precos">
+              <li><a href="agendamento.html?servico=banho-gel"><span>Banho de gel</span><b>R$ 60,00</b></a></li>
+              <li><a href="agendamento.html?servico=molde-f1"><span>Molde F1</span><b>R$ 90,00</b></a></li>
+              <li><a href="agendamento.html?servico=gel-tips"><span>Gel na tips</span><b>R$ 80,00</b></a></li>
+              <li><a href="agendamento.html?servico=postica-realista"><span>Postiça realista</span><b>R$ 45,00</b></a></li>
+            </ul>
+          </article>
+          <article class="preco-grupo preco-grupo-destaque revelar">
+            <p class="preco-categoria">02 · Manutenção</p>
+            <h3>Manutenção</h3>
+            <ul class="lista-precos">
+              <li><a href="agendamento.html?servico=manutencao-molde-f1"><span>Molde F1</span><b>R$ 70,00</b></a></li>
+              <li><a href="agendamento.html?servico=manutencao-gel-tips"><span>Gel na tips</span><b>R$ 65,00</b></a></li>
+              <li><a href="agendamento.html?servico=manutencao-banho-gel"><span>Banho de gel</span><b>R$ 50,00</b></a></li>
+            </ul>
+          </article>
+          <article class="preco-grupo revelar">
+            <p class="preco-categoria">03 · Adicionais</p>
+            <h3>Extras</h3>
+            <ul class="lista-precos lista-precos-extra">
+              <li><span>Remoção</span><b>R$ 45,00</b></li>
+              <li><span>Reposição de unha</span><b>R$ 9,00</b></li>
+              <li><span>Encapsulada</span><b>+ R$ 15,00</b></li>
+              <li><span>Pedraria na unha</span><b>+ R$ 1,00</b></li>
+            </ul>
+          </article>
         </div>
-        <p class="nota-servico">Valores e detalhes variam conforme o procedimento. Consulte a Sara antes de agendar.</p>
+        <p class="nota-servico">Os valores dos extras são adicionais quando indicados. Confirme com a Sara quais opções se aplicam ao seu procedimento.</p>
       </div>
     </section>
 
@@ -168,14 +199,26 @@
 
     <section class="agendamento secao container" id="agendamento">
       <div class="agendamento-card revelar">
-        <div class="agendamento-texto"><p class="rotulo"><span></span>Vamos começar?</p><h2>Monte seu pedido de <em>agendamento</em></h2><p>Escolha as opções e copie uma mensagem pronta para enviar à Sara pelo seu canal de contato.</p><div class="cores"><i></i><i></i><i></i><i></i></div></div>
-        <form id="formulario">
-          <label>Como podemos chamar você?<input name="nome" type="text" placeholder="Seu primeiro nome" autocomplete="given-name" required></label>
-          <fieldset><legend>Qual serviço você procura?</legend><div class="opcoes"><label><input type="radio" name="servico" value="Esmaltação em gel" required><span>Esmaltação</span></label><label><input type="radio" name="servico" value="Nail art personalizada"><span>Nail art</span></label><label><input type="radio" name="servico" value="Alongamento"><span>Alongamento</span></label></div></fieldset>
-          <label>Alguma ideia ou ocasião especial?<textarea name="detalhes" rows="3" placeholder="Ex.: tons de vinho para um evento..."></textarea></label>
-          <button class="botao botao-claro" type="submit">Copiar meu pedido ↗</button>
-          <p id="status" role="status" aria-live="polite"></p>
-        </form>
+        <div class="agendamento-texto"><p class="rotulo"><span></span>Seu próximo momento</p><h2>Agende com <em>facilidade.</em></h2><p>Entre na sua conta para escolher o serviço, informar o melhor dia e horário e acompanhar o retorno da Sara.</p><div class="cores"><i></i><i></i><i></i><i></i></div></div>
+        <div class="login-convite">
+          <p class="rotulo"><span></span>Área da cliente</p>
+          <h3>Entre ou crie sua conta</h3>
+          <p>Seu pedido de horário fica vinculado ao seu login, e você pode acompanhar o status por lá.</p>
+          <a class="botao botao-claro" href="agendamento.html">Acessar agendamento <b>↗</b></a>
+          <p class="login-nota">O horário só fica confirmado depois que a Sara verificar a disponibilidade e responder.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="localizacao container revelar" aria-labelledby="localizacaoTitulo">
+      <div class="localizacao-texto">
+        <p class="rotulo"><span></span>Onde atender</p>
+        <h2 id="localizacaoTitulo">Atendimento em <em>Campo Grande</em></h2>
+        <p>Sara atende em Campo Grande, Rio de Janeiro. Confirme o endereço exato diretamente com ela antes do agendamento.</p>
+      </div>
+      <div class="localizacao-acoes">
+        <a class="localizacao-mapa" href="https://www.google.com/maps/search/?api=1&amp;query=Campo+Grande%2C+Rio+de+Janeiro%2C+RJ" target="_blank" rel="noopener noreferrer">Ver região no mapa ↗</a>
+        <a class="localizacao-contato" href="https://wa.me/5521996400153?text=Ol%C3%A1%2C%20Sara!%20Qual%20%C3%A9%20o%20endere%C3%A7o%20do%20atendimento%20em%20Campo%20Grande%3F" target="_blank" rel="noopener noreferrer">Consultar endereço pelo WhatsApp</a>
       </div>
     </section>
   </main>

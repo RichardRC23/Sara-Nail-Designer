@@ -9,6 +9,43 @@ const alternarMenu = (aberto) => {
 
 menuBotao.addEventListener('click', () => alternarMenu(!menu.classList.contains('aberto')));
 menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => alternarMenu(false)));
+
+const customerAccountName = document.querySelector('#customerAccountName');
+const customerAccountInitial = document.querySelector('#customerAccountInitial');
+const customerAccountPhoto = document.querySelector('#customerAccountPhoto');
+const supabaseConfig = window.SARA_SUPABASE_CONFIG || {};
+if (customerAccountName && supabaseConfig.url && supabaseConfig.publishableKey && window.supabase?.createClient) {
+  const customerSupabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+  const updateCustomerLink = async (user) => {
+    if (!user) {
+      customerAccountName.textContent = 'Área da cliente';
+      customerAccountInitial.textContent = 'C';
+      customerAccountPhoto.hidden = true;
+      return;
+    }
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Minha área';
+    customerAccountName.textContent = name.split(' ')[0];
+    customerAccountInitial.textContent = name.trim().charAt(0).toUpperCase();
+    customerAccountPhoto.hidden = true;
+    const avatarPath = user.user_metadata?.avatar_path;
+    if (!avatarPath) return;
+    const { data, error } = await customerSupabase.storage.from('sara-avatars').createSignedUrl(avatarPath, 60 * 60);
+    if (error || !data?.signedUrl) return;
+    customerAccountPhoto.onload = () => {
+      customerAccountPhoto.hidden = false;
+      customerAccountInitial.hidden = true;
+    };
+    customerAccountPhoto.onerror = () => {
+      customerAccountPhoto.hidden = true;
+      customerAccountInitial.hidden = false;
+    };
+    customerAccountPhoto.src = data.signedUrl;
+  };
+  customerSupabase.auth.onAuthStateChange((_event, session) => {
+    window.setTimeout(() => { void updateCustomerLink(session?.user); }, 0);
+  });
+  customerSupabase.auth.getSession().then(({ data }) => updateCustomerLink(data?.session?.user));
+}
 window.addEventListener('scroll', () => topo.classList.toggle('rolou', scrollY > 12), { passive: true });
 
 const observador = new IntersectionObserver(
@@ -22,29 +59,6 @@ document.querySelectorAll('[data-servico]').forEach((link) => {
     const opcao = [...document.querySelectorAll('[name="servico"]')].find((radio) => radio.value === link.dataset.servico);
     if (opcao) opcao.checked = true;
   });
-});
-
-document.querySelectorAll('[data-mood]').forEach((card) => {
-  card.addEventListener('click', () => {
-    document.querySelector('[name="detalhes"]').value = `Gostei do estilo ${card.dataset.mood} e quero explorar uma ideia nessa linha.`;
-    document.querySelector('#agendamento').scrollIntoView({ behavior: 'smooth' });
-  });
-});
-
-document.querySelector('#formulario').addEventListener('submit', async (evento) => {
-  evento.preventDefault();
-  const dados = new FormData(evento.currentTarget);
-  const nome = String(dados.get('nome')).trim();
-  const servico = String(dados.get('servico'));
-  const detalhes = String(dados.get('detalhes')).trim();
-  const mensagem = `Oi, Sara! Meu nome é ${nome} e tenho interesse em ${servico}.${detalhes ? ` Minha ideia: ${detalhes}` : ''} Podemos conversar sobre os detalhes e horários disponíveis?`;
-  const status = document.querySelector('#status');
-  try {
-    await navigator.clipboard.writeText(mensagem);
-    status.textContent = 'Pedido copiado! Agora é só colar e enviar para a Sara.';
-  } catch {
-    status.textContent = mensagem;
-  }
 });
 
 document.querySelector('#ano').textContent = new Date().getFullYear();
