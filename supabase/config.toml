@@ -1,0 +1,2 @@
+[functions.appointment-notification]
+verify_jwt = false

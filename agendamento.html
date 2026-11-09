@@ -41,18 +41,6 @@
       <p>Entre ou crie sua conta para enviar um pedido e acompanhar o retorno da Sara em um só lugar.</p>
     </section>
 
-    <section class="localizacao localizacao-agendamento container revelar" aria-labelledby="localizacaoTitulo">
-      <div class="localizacao-texto">
-        <p class="rotulo"><span></span>Local do atendimento</p>
-        <h2 id="localizacaoTitulo">Campo Grande, <em>Rio de Janeiro</em></h2>
-        <p>O endereço exato deve ser confirmado com a Sara antes do agendamento.</p>
-      </div>
-      <div class="localizacao-acoes">
-        <a class="localizacao-mapa" href="https://www.google.com/maps/search/?api=1&amp;query=Campo+Grande%2C+Rio+de+Janeiro%2C+RJ" target="_blank" rel="noopener noreferrer">Ver região no mapa ↗</a>
-        <a class="localizacao-contato" href="https://wa.me/5521996400153?text=Ol%C3%A1%2C%20Sara!%20Qual%20%C3%A9%20o%20endere%C3%A7o%20do%20atendimento%20em%20Campo%20Grande%3F" target="_blank" rel="noopener noreferrer">Consultar endereço pelo WhatsApp</a>
-      </div>
-    </section>
-
     <section class="portal-conteudo container" id="area-cliente" aria-label="Acesso e agendamento">
       <div class="portal-card revelar" id="authCard">
         <div class="portal-card-cabecalho">
@@ -230,6 +218,25 @@
               <div class="recorte-acoes"><button class="recorte-cancelar" id="cancelPhotoCrop" type="button">Cancelar</button><button class="botao" id="savePhotoCrop" type="button">Salvar foto <b>↗</b></button></div>
             </div>
           </dialog>
+        </section>
+      </div>
+
+      <div class="portal-card portal-admin" id="adminDashboard" hidden>
+        <div class="dashboard-topo">
+          <div>
+            <p class="rotulo"><span></span>Gestão do estúdio</p>
+            <h2>Olá, <span id="adminName">Sara</span></h2>
+            <p class="email-cliente">Gerencie os pedidos de horário enviados pelas clientes.</p>
+          </div>
+          <button id="adminSignOut" class="texto-botao" type="button">Sair da conta</button>
+        </div>
+        <section class="admin-pedidos" aria-labelledby="adminPedidosTitulo">
+          <div class="admin-pedidos-cabecalho">
+            <div><p class="rotulo"><span></span>Agenda</p><h3 id="adminPedidosTitulo">Pedidos de horário</h3></div>
+            <div class="admin-pedidos-acoes"><span class="admin-atualizacao">Atualize o status assim que verificar a disponibilidade.</span><button id="refreshAdminAppointments" class="admin-atualizar" type="button">Atualizar pedidos</button></div>
+          </div>
+          <div id="adminAppointmentsList" class="admin-pedidos-lista" aria-live="polite"></div>
+          <p class="portal-status" id="adminStatus" role="status" aria-live="polite"></p>
         </section>
       </div>
     </section>

@@ -2,6 +2,7 @@ const menuBotao = document.querySelector('.menu-botao');
 const menu = document.querySelector('.menu');
 const authCard = document.querySelector('#authCard');
 const dashboard = document.querySelector('#dashboard');
+const adminDashboard = document.querySelector('#adminDashboard');
 const authStatus = document.querySelector('#authStatus');
 const appointmentStatus = document.querySelector('#appointmentStatus');
 const loginPanel = document.querySelector('#loginPanel');
@@ -96,8 +97,10 @@ configureDateMinimum();
 
 const showDashboard = (session) => {
   const user = session?.user;
+  const isAdmin = user?.app_metadata?.role === 'admin';
   authCard.hidden = Boolean(user);
-  dashboard.hidden = !user;
+  dashboard.hidden = !user || isAdmin;
+  adminDashboard.hidden = !isAdmin;
   if (!user) {
     customerAccountName.textContent = 'Área da cliente';
     customerAccountInitial.textContent = '♡';
@@ -114,10 +117,12 @@ const showDashboard = (session) => {
   customerAccountInitial.hidden = false;
   document.querySelector('#customerName').textContent = metadataName || fallbackName;
   document.querySelector('#customerEmail').textContent = user.email || '';
+  document.querySelector('#adminName').textContent = metadataName || fallbackName;
   document.querySelector('#profileName').value = metadataName || '';
   document.querySelector('#profileEmail').value = user.email || '';
   void loadProfilePhoto(user);
-  void loadAppointments();
+  if (isAdmin) void loadAdminAppointments();
+  else void loadAppointments();
 };
 
 const selectCustomerPanel = (panelId) => {
@@ -392,6 +397,67 @@ async function loadAppointments() {
   `).join('');
 }
 
+async function loadAdminAppointments() {
+  const list = document.querySelector('#adminAppointmentsList');
+  list.innerHTML = '<p class="pedido-carregando">Carregando os pedidos…</p>';
+  const { data, error } = await supabaseClient
+    .from('appointments')
+    .select('id, customer_name, customer_email, service, requested_date, requested_time, notes, status, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    list.innerHTML = '<p class="pedidos-vazio">Não foi possível carregar a agenda. Confira se o arquivo supabase/schema.sql foi atualizado no projeto Supabase e entre novamente.</p>';
+    return;
+  }
+  if (!data.length) {
+    list.innerHTML = '<p class="pedidos-vazio">Ainda não há pedidos de horário. Quando uma cliente enviar uma solicitação, ela aparecerá aqui.</p>';
+    return;
+  }
+
+  list.innerHTML = data.map((item) => `
+    <article class="admin-pedido">
+      <div class="admin-pedido-topo">
+        <div><span class="admin-situacao admin-situacao-${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span><h4>${escapeHtml(item.service)}</h4></div>
+        <time datetime="${escapeHtml(item.requested_date)}T${escapeHtml(String(item.requested_time).slice(0, 5))}">${escapeHtml(dateLabel(item.requested_date))} · ${escapeHtml(String(item.requested_time).slice(0, 5))}</time>
+      </div>
+      <p class="admin-cliente-dados"><strong>${escapeHtml(item.customer_name || 'Cliente')}</strong><a href="mailto:${escapeHtml(item.customer_email || '')}">${escapeHtml(item.customer_email || 'E-mail indisponível')}</a></p>
+      ${item.notes ? `<p class="admin-pedido-nota"><strong>Observação:</strong> ${escapeHtml(item.notes)}</p>` : ''}
+      <label class="admin-status-label" for="status-${escapeHtml(item.id)}">Status do pedido
+        <select class="admin-status-select" id="status-${escapeHtml(item.id)}" data-appointment-id="${escapeHtml(item.id)}">
+          <option value="requested" ${item.status === 'requested' ? 'selected' : ''}>Aguardando confirmação</option>
+          <option value="confirmed" ${item.status === 'confirmed' ? 'selected' : ''}>Confirmado</option>
+          <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelado</option>
+        </select>
+      </label>
+    </article>
+  `).join('');
+}
+document.querySelector('#refreshAdminAppointments').addEventListener('click', () => {
+  showMessage(document.querySelector('#adminStatus'), '');
+  void loadAdminAppointments();
+});
+
+document.querySelector('#adminAppointmentsList').addEventListener('change', async (event) => {
+  const select = event.target.closest('.admin-status-select');
+  if (!select) return;
+  const adminStatus = document.querySelector('#adminStatus');
+  select.disabled = true;
+  showMessage(adminStatus, 'Atualizando o pedido…');
+  const { data, error } = await supabaseClient
+    .from('appointments')
+    .update({ status: select.value })
+    .eq('id', select.dataset.appointmentId)
+    .select('id')
+    .maybeSingle();
+  select.disabled = false;
+  if (error || !data) {
+    showMessage(adminStatus, 'Não foi possível atualizar. Confira se o SQL atualizado foi executado no Supabase e tente novamente.');
+    return;
+  }
+  showMessage(adminStatus, 'Status atualizado. A cliente verá a mudança na área de agendamentos.');
+  await loadAdminAppointments();
+});
+
 const showRecoveryPanel = () => {
   recoveryFlow = true;
   authTabs.hidden = true;
@@ -529,10 +595,12 @@ document.querySelector('#appointmentForm').addEventListener('submit', async (eve
   await loadAppointments();
 });
 
-document.querySelector('#signOut').addEventListener('click', async () => {
+const signOutCustomer = async () => {
   const { error } = await supabaseClient.auth.signOut();
   if (error) showMessage(appointmentStatus, 'Não foi possível sair agora. Tente novamente.');
-});
+};
+document.querySelector('#signOut').addEventListener('click', signOutCustomer);
+document.querySelector('#adminSignOut').addEventListener('click', signOutCustomer);
 
 const config = window.SARA_SUPABASE_CONFIG || {};
 if (!config.url || !config.publishableKey || !window.supabase?.createClient) {
