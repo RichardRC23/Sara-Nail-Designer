@@ -19,7 +19,7 @@ create table if not exists public.appointments (
     'Nail art personalizada',
     'Alongamento'
   )),
-  requested_date date not null check (requested_date >= current_date),
+  requested_date date not null,
   requested_time time not null,
   notes text not null default '' check (char_length(notes) <= 1000),
   status text not null default 'requested' check (status in ('requested', 'confirmed', 'cancelled')),
@@ -29,6 +29,11 @@ create table if not exists public.appointments (
 alter table public.appointments
   add column if not exists customer_name text,
   add column if not exists customer_email text;
+
+-- A data pode se tornar passada sem que o pedido deixe de ser editável.
+-- A política RLS de INSERT continua impedindo novos pedidos para datas passadas.
+alter table public.appointments
+  drop constraint if exists appointments_requested_date_check;
 
 update public.appointments as a
    set customer_name = coalesce(u.raw_user_meta_data ->> 'full_name', split_part(u.email, '@', 1)),
@@ -78,8 +83,13 @@ alter table public.appointments
 
 alter table public.appointments enable row level security;
 
+create index if not exists appointments_customer_id_idx
+  on public.appointments (customer_id);
+
 revoke all on table public.appointments from anon, authenticated;
-grant select, insert on table public.appointments to authenticated;
+grant select on table public.appointments to authenticated;
+grant insert (service, requested_date, requested_time, notes)
+  on table public.appointments to authenticated;
 grant update (status) on table public.appointments to authenticated;
 
 -- Políticas permissivas antigas se combinam com OR. Remova-as para que a
