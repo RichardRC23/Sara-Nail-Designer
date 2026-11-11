@@ -16,26 +16,34 @@ const customerAccountPhoto = document.querySelector('#customerAccountPhoto');
 const supabaseConfig = window.SARA_SUPABASE_CONFIG || {};
 if (customerAccountName && supabaseConfig.url && supabaseConfig.publishableKey && window.supabase?.createClient) {
   const customerSupabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+  let customerAccountUpdateId = 0;
   const updateCustomerLink = async (user) => {
+    const updateId = ++customerAccountUpdateId;
+    customerAccountPhoto.onload = null;
+    customerAccountPhoto.onerror = null;
+    customerAccountPhoto.removeAttribute('src');
+    customerAccountPhoto.hidden = true;
+    customerAccountInitial.hidden = false;
     if (!user) {
       customerAccountName.textContent = 'Área da cliente';
       customerAccountInitial.textContent = 'C';
-      customerAccountPhoto.hidden = true;
       return;
     }
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Minha área';
     customerAccountName.textContent = name.split(' ')[0];
     customerAccountInitial.textContent = name.trim().charAt(0).toUpperCase();
-    customerAccountPhoto.hidden = true;
     const avatarPath = user.user_metadata?.avatar_path;
     if (!avatarPath) return;
     const { data, error } = await customerSupabase.storage.from('sara-avatars').createSignedUrl(avatarPath, 60 * 60);
+    if (updateId !== customerAccountUpdateId) return;
     if (error || !data?.signedUrl) return;
     customerAccountPhoto.onload = () => {
+      if (updateId !== customerAccountUpdateId) return;
       customerAccountPhoto.hidden = false;
       customerAccountInitial.hidden = true;
     };
     customerAccountPhoto.onerror = () => {
+      if (updateId !== customerAccountUpdateId) return;
       customerAccountPhoto.hidden = true;
       customerAccountInitial.hidden = false;
     };
@@ -62,3 +70,4 @@ document.querySelectorAll('[data-servico]').forEach((link) => {
 });
 
 document.querySelector('#ano').textContent = new Date().getFullYear();
+
