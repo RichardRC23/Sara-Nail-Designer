@@ -80,7 +80,17 @@
   .perfil-foto-card{width:100%;max-width:360px;justify-self:center}
   .perfil-formularios{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(max-width:560px){
+@media(max-width:640px){
   .perfil-formularios{grid-template-columns:1fr}
   .auth-form.perfil-form{height:auto;padding:19px}
 }
+
+/* Abas da área da cliente: estado selecionado e teclado mais evidentes. */
+.cliente-abas{gap:8px;padding:7px;border-color:rgba(100,31,50,.12);border-radius:18px;background:linear-gradient(135deg,rgba(245,233,225,.9),rgba(255,250,247,.9))}
+.cliente-aba{position:relative;min-height:48px;border:1px solid transparent;transition:background .2s,color .2s,box-shadow .2s,border-color .2s,transform .2s}
+.cliente-aba[aria-selected=true]{border-color:rgba(100,31,50,.1);background:linear-gradient(180deg,#fff,#fffaf7);box-shadow:0 6px 16px rgba(61,17,31,.09);color:var(--vinho)}
+.cliente-aba[aria-selected=true]::after{position:absolute;right:30%;bottom:4px;left:30%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--rose),var(--ouro));content:""}
+.cliente-aba:focus-visible{outline:3px solid rgba(201,134,146,.48);outline-offset:3px}
+.cliente-aba:hover{transform:translateY(-1px)}
+@media(max-width:520px){.cliente-aba{min-height:57px}.cliente-aba[aria-selected=true]::after{right:34%;left:34%}}
+@media(max-width:640px){.perfil-formularios{grid-template-columns:1fr}}

@@ -5,10 +5,23 @@ const menu = document.querySelector('.menu');
 const alternarMenu = (aberto) => {
   menu.classList.toggle('aberto', aberto);
   menuBotao.setAttribute('aria-expanded', String(aberto));
+  menuBotao.setAttribute('aria-label', aberto ? 'Fechar menu' : 'Abrir menu');
+  menuBotao.querySelector('.sr-only').textContent = aberto ? 'Fechar menu' : 'Abrir menu';
 };
 
 menuBotao.addEventListener('click', () => alternarMenu(!menu.classList.contains('aberto')));
 menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => alternarMenu(false)));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && menu.classList.contains('aberto')) {
+    alternarMenu(false);
+    menuBotao.focus();
+  }
+});
+document.addEventListener('click', (event) => {
+  if (menu.classList.contains('aberto') && !menu.contains(event.target) && !menuBotao.contains(event.target)) {
+    alternarMenu(false);
+  }
+});
 
 const customerAccountName = document.querySelector('#customerAccountName');
 const customerAccountInitial = document.querySelector('#customerAccountInitial');
@@ -70,4 +83,3 @@ document.querySelectorAll('[data-servico]').forEach((link) => {
 });
 
 document.querySelector('#ano').textContent = new Date().getFullYear();
-

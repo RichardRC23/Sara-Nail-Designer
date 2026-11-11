@@ -20,10 +20,23 @@ let recoveryFlow = false;
 const setMenuOpen = (open) => {
   menu.classList.toggle('aberto', open);
   menuBotao.setAttribute('aria-expanded', String(open));
+  menuBotao.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+  menuBotao.querySelector('.sr-only').textContent = open ? 'Fechar menu' : 'Abrir menu';
 };
 
 menuBotao.addEventListener('click', () => setMenuOpen(!menu.classList.contains('aberto')));
 menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMenuOpen(false)));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && menu.classList.contains('aberto')) {
+    setMenuOpen(false);
+    menuBotao.focus();
+  }
+});
+document.addEventListener('click', (event) => {
+  if (menu.classList.contains('aberto') && !menu.contains(event.target) && !menuBotao.contains(event.target)) {
+    setMenuOpen(false);
+  }
+});
 document.querySelector('#ano').textContent = new Date().getFullYear();
 
 const revealObserver = new IntersectionObserver((items) => {
@@ -129,10 +142,25 @@ const selectCustomerPanel = (panelId) => {
   customerTabs.forEach((tab) => {
     const selected = tab.getAttribute('aria-controls') === panelId;
     tab.setAttribute('aria-selected', String(selected));
+    tab.setAttribute('tabindex', selected ? '0' : '-1');
     document.querySelector(`#${tab.getAttribute('aria-controls')}`).hidden = !selected;
   });
 };
-customerTabs.forEach((tab) => tab.addEventListener('click', () => selectCustomerPanel(tab.getAttribute('aria-controls'))));
+customerTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectCustomerPanel(tab.getAttribute('aria-controls')));
+  tab.addEventListener('keydown', (event) => {
+    let nextIndex;
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % customerTabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (index - 1 + customerTabs.length) % customerTabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = customerTabs.length - 1;
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    const nextTab = customerTabs[nextIndex];
+    selectCustomerPanel(nextTab.getAttribute('aria-controls'));
+    nextTab.focus();
+  });
+});
 
 async function loadProfilePhoto(user) {
   const avatar = document.querySelector('#customerAvatar');

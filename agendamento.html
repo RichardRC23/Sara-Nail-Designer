@@ -20,7 +20,7 @@
       <a class="marca" href="index.html" aria-label="Sara Nail Designer — página inicial">
         <img class="logo logo-topo" src="assets/logo-sara.png" alt="Sara Nail Designer" width="512" height="512">
       </a>
-      <button class="menu-botao" aria-expanded="false" aria-controls="menu">
+      <button class="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
         <i></i><i></i><i></i><span class="sr-only">Abrir menu</span>
       </button>
       <nav id="menu" class="menu" aria-label="Navegação principal">
@@ -113,9 +113,9 @@
         </div>
 
         <div class="cliente-abas" role="tablist" aria-label="Seções da sua área">
-          <button class="cliente-aba" id="appointmentsTab" type="button" role="tab" aria-selected="true" aria-controls="appointmentsPanel"><span aria-hidden="true">▦</span> Agendamentos</button>
-          <button class="cliente-aba" id="subscriptionsTab" type="button" role="tab" aria-selected="false" aria-controls="subscriptionsPanel"><span aria-hidden="true">♡</span> Assinaturas</button>
-          <button class="cliente-aba" id="profileTab" type="button" role="tab" aria-selected="false" aria-controls="profilePanel"><span aria-hidden="true">◉</span> Meu perfil</button>
+          <button class="cliente-aba" id="appointmentsTab" type="button" role="tab" aria-selected="true" aria-controls="appointmentsPanel" tabindex="0"><span aria-hidden="true">▦</span> Agendamentos</button>
+          <button class="cliente-aba" id="subscriptionsTab" type="button" role="tab" aria-selected="false" aria-controls="subscriptionsPanel" tabindex="-1"><span aria-hidden="true">♡</span> Assinaturas</button>
+          <button class="cliente-aba" id="profileTab" type="button" role="tab" aria-selected="false" aria-controls="profilePanel" tabindex="-1"><span aria-hidden="true">◉</span> Meu perfil</button>
         </div>
 
         <div id="appointmentsPanel" class="cliente-painel" role="tabpanel" aria-labelledby="appointmentsTab">
@@ -259,4 +259,3 @@
   </footer>
 </body>
 </html>
-
