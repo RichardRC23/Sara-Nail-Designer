@@ -1,4 +1,4 @@
-import { cp, mkdir } from 'node:fs/promises';
+import { cp, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -19,5 +19,7 @@ for (const file of publicFiles) {
   await cp(join(projectDirectory, file), join(outputDirectory, file));
 }
 await cp(join(projectDirectory, 'assets'), join(outputDirectory, 'assets'), { recursive: true, force: true });
+await rm(join(outputDirectory, 'assets', 'hero-nails.png'), { force: true });
 
 process.stdout.write('Site pronto para publicação na pasta dist/.\n');
+
