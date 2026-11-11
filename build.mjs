@@ -22,4 +22,3 @@ await cp(join(projectDirectory, 'assets'), join(outputDirectory, 'assets'), { re
 await rm(join(outputDirectory, 'assets', 'hero-nails.png'), { force: true });
 
 process.stdout.write('Site pronto para publicação na pasta dist/.\n');
-
