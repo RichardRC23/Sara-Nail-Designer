@@ -233,7 +233,24 @@
         <section class="admin-pedidos" aria-labelledby="adminPedidosTitulo">
           <div class="admin-pedidos-cabecalho">
             <div><p class="rotulo"><span></span>Agenda</p><h3 id="adminPedidosTitulo">Pedidos de horário</h3></div>
-            <div class="admin-pedidos-acoes"><span class="admin-atualizacao">Atualize o status assim que verificar a disponibilidade.</span><button id="refreshAdminAppointments" class="admin-atualizar" type="button">Atualizar pedidos</button></div>
+            <div class="admin-pedidos-acoes"><span class="admin-atualizacao">Confira a disponibilidade e atualize o status de cada pedido.</span><button id="refreshAdminAppointments" class="admin-atualizar" type="button">↻ Atualizar pedidos</button></div>
+          </div>
+          <div class="admin-resumo" aria-label="Resumo dos pedidos">
+            <article class="admin-resumo-card admin-resumo-pendentes"><span>Pendentes</span><strong id="adminPendingCount">—</strong></article>
+            <article class="admin-resumo-card admin-resumo-confirmados"><span>Confirmados</span><strong id="adminConfirmedCount">—</strong></article>
+            <article class="admin-resumo-card admin-resumo-cancelados"><span>Cancelados</span><strong id="adminCancelledCount">—</strong></article>
+            <article class="admin-resumo-card admin-resumo-total"><span>Total de pedidos</span><strong id="adminTotalCount">—</strong></article>
+          </div>
+          <div class="admin-filtros">
+            <label class="admin-busca-label" for="adminAppointmentSearch">Buscar cliente ou serviço</label>
+            <input id="adminAppointmentSearch" type="search" placeholder="Nome, email ou procedimento" autocomplete="off">
+            <label class="admin-filtro-label" for="adminAppointmentFilter">Mostrar</label>
+            <select id="adminAppointmentFilter">
+              <option value="all">Todos os status</option>
+              <option value="requested">Pendentes</option>
+              <option value="confirmed">Confirmados</option>
+              <option value="cancelled">Cancelados</option>
+            </select>
           </div>
           <div id="adminAppointmentsList" class="admin-pedidos-lista" aria-live="polite"></div>
           <p class="portal-status" id="adminStatus" role="status" aria-live="polite"></p>

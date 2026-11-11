@@ -425,33 +425,45 @@ async function loadAppointments() {
   `).join('');
 }
 
-async function loadAdminAppointments() {
+let adminAppointments = [];
+
+const renderAdminAppointments = () => {
   const list = document.querySelector('#adminAppointmentsList');
-  list.innerHTML = '<p class="pedido-carregando">Carregando os pedidos…</p>';
-  const { data, error } = await supabaseClient
-    .from('appointments')
-    .select('id, customer_name, customer_email, service, requested_date, requested_time, notes, status, created_at')
-    .order('created_at', { ascending: false });
+  const statusFilter = document.querySelector('#adminAppointmentFilter').value;
+  const query = document.querySelector('#adminAppointmentSearch').value.trim().toLocaleLowerCase('pt-BR');
+  const counts = adminAppointments.reduce((total, item) => {
+    total[item.status] = (total[item.status] || 0) + 1;
+    return total;
+  }, { requested: 0, confirmed: 0, cancelled: 0 });
 
-  if (error) {
-    list.innerHTML = '<p class="pedidos-vazio">Não foi possível carregar a agenda. Confira se o arquivo supabase/schema.sql foi atualizado no projeto Supabase e entre novamente.</p>';
+  document.querySelector('#adminPendingCount').textContent = counts.requested;
+  document.querySelector('#adminConfirmedCount').textContent = counts.confirmed;
+  document.querySelector('#adminCancelledCount').textContent = counts.cancelled;
+  document.querySelector('#adminTotalCount').textContent = adminAppointments.length;
+
+  const filteredAppointments = adminAppointments.filter((item) => {
+    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    const searchableText = `${item.customer_name || ''} ${item.customer_email || ''} ${item.service || ''}`.toLocaleLowerCase('pt-BR');
+    return matchesStatus && searchableText.includes(query);
+  });
+
+  if (!filteredAppointments.length) {
+    list.innerHTML = adminAppointments.length
+      ? '<p class="admin-lista-vazia">Nenhum pedido corresponde a essa busca ou filtro.</p>'
+      : '<p class="admin-lista-vazia">Ainda não há pedidos de horário. Quando uma cliente enviar uma solicitação, ela aparecerá aqui.</p>';
     return;
   }
-  if (!data.length) {
-    list.innerHTML = '<p class="pedidos-vazio">Ainda não há pedidos de horário. Quando uma cliente enviar uma solicitação, ela aparecerá aqui.</p>';
-    return;
-  }
 
-  list.innerHTML = data.map((item) => `
+  list.innerHTML = filteredAppointments.map((item) => `
     <article class="admin-pedido">
       <div class="admin-pedido-topo">
         <div><span class="admin-situacao admin-situacao-${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span><h4>${escapeHtml(item.service)}</h4></div>
-        <time datetime="${escapeHtml(item.requested_date)}T${escapeHtml(String(item.requested_time).slice(0, 5))}">${escapeHtml(dateLabel(item.requested_date))} · ${escapeHtml(String(item.requested_time).slice(0, 5))}</time>
+        <time datetime="${escapeHtml(item.requested_date)}T${escapeHtml(String(item.requested_time).slice(0, 5))}">${escapeHtml(dateLabel(item.requested_date))}<span>${escapeHtml(String(item.requested_time).slice(0, 5))}</span></time>
       </div>
       <p class="admin-cliente-dados"><strong>${escapeHtml(item.customer_name || 'Cliente')}</strong><a href="mailto:${escapeHtml(item.customer_email || '')}">${escapeHtml(item.customer_email || 'E-mail indisponível')}</a></p>
       ${item.notes ? `<p class="admin-pedido-nota"><strong>Observação:</strong> ${escapeHtml(item.notes)}</p>` : ''}
-      <label class="admin-status-label" for="status-${escapeHtml(item.id)}">Status do pedido
-        <select class="admin-status-select" id="status-${escapeHtml(item.id)}" data-appointment-id="${escapeHtml(item.id)}">
+      <label class="admin-status-label" for="status-${escapeHtml(item.id)}">Atualizar status
+        <select class="admin-status-select" id="status-${escapeHtml(item.id)}" data-appointment-id="${escapeHtml(item.id)}" data-saved-status="${escapeHtml(item.status)}">
           <option value="requested" ${item.status === 'requested' ? 'selected' : ''}>Aguardando confirmação</option>
           <option value="confirmed" ${item.status === 'confirmed' ? 'selected' : ''}>Confirmado</option>
           <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelado</option>
@@ -459,17 +471,43 @@ async function loadAdminAppointments() {
       </label>
     </article>
   `).join('');
+};
+
+async function loadAdminAppointments() {
+  const list = document.querySelector('#adminAppointmentsList');
+  const refreshButton = document.querySelector('#refreshAdminAppointments');
+  refreshButton.disabled = true;
+  refreshButton.setAttribute('aria-busy', 'true');
+  list.innerHTML = '<p class="pedido-carregando">Carregando os pedidos…</p>';
+  const { data, error } = await supabaseClient
+    .from('appointments')
+    .select('id, customer_name, customer_email, service, requested_date, requested_time, notes, status, created_at')
+    .order('created_at', { ascending: false });
+
+  refreshButton.disabled = false;
+  refreshButton.removeAttribute('aria-busy');
+  if (error) {
+    list.innerHTML = '<p class="admin-lista-vazia">Não foi possível carregar os pedidos. Confira sua conexão e tente atualizar novamente.</p>';
+    showMessage(document.querySelector('#adminStatus'), 'Os pedidos não foram atualizados.');
+    return;
+  }
+  adminAppointments = data || [];
+  showMessage(document.querySelector('#adminStatus'), '');
+  renderAdminAppointments();
 }
 document.querySelector('#refreshAdminAppointments').addEventListener('click', () => {
-  showMessage(document.querySelector('#adminStatus'), '');
   void loadAdminAppointments();
 });
+document.querySelector('#adminAppointmentSearch').addEventListener('input', renderAdminAppointments);
+document.querySelector('#adminAppointmentFilter').addEventListener('change', renderAdminAppointments);
 
 document.querySelector('#adminAppointmentsList').addEventListener('change', async (event) => {
   const select = event.target.closest('.admin-status-select');
   if (!select) return;
   const adminStatus = document.querySelector('#adminStatus');
+  const previousStatus = select.dataset.savedStatus;
   select.disabled = true;
+  select.setAttribute('aria-busy', 'true');
   showMessage(adminStatus, 'Atualizando o pedido…');
   const { data, error } = await supabaseClient
     .from('appointments')
@@ -478,12 +516,17 @@ document.querySelector('#adminAppointmentsList').addEventListener('change', asyn
     .select('id')
     .maybeSingle();
   select.disabled = false;
+  select.removeAttribute('aria-busy');
   if (error || !data) {
-    showMessage(adminStatus, 'Não foi possível atualizar. Confira se o SQL atualizado foi executado no Supabase e tente novamente.');
+    select.value = previousStatus;
+    showMessage(adminStatus, 'Não foi possível atualizar o status. Confira a conexão e tente novamente.');
     return;
   }
-  showMessage(adminStatus, 'Status atualizado. A cliente verá a mudança na área de agendamentos.');
-  await loadAdminAppointments();
+  const updatedAppointment = adminAppointments.find((item) => item.id === select.dataset.appointmentId);
+  if (updatedAppointment) updatedAppointment.status = select.value;
+  select.dataset.savedStatus = select.value;
+  showMessage(adminStatus, 'Status atualizado. A cliente já pode ver a mudança na área de agendamentos.');
+  renderAdminAppointments();
 });
 
 const showRecoveryPanel = () => {

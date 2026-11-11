@@ -17,6 +17,27 @@
 @media(max-width:760px){.admin-pedidos-lista{grid-template-columns:1fr}}
 @media(max-width:520px){.admin-pedidos{margin-top:19px;padding:17px}.admin-pedidos-cabecalho{align-items:flex-start;flex-direction:column;gap:8px}.admin-pedidos-acoes{align-items:flex-start;flex-direction:column}.admin-atualizacao{text-align:left}.admin-pedido{padding:15px}.admin-pedido-topo{display:grid}.admin-pedido-topo time{text-align:left}}
 
+/* Painel administrativo: indicadores, busca e status de leitura rápida. */
+.admin-resumo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:22px 0 18px}
+.admin-resumo-card{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:74px;padding:14px 16px;border:1px solid rgba(100,31,50,.1);border-radius:15px;background:#fff}
+.admin-resumo-card span{color:var(--cinza);font-size:12px}
+.admin-resumo-card strong{font:400 27px/1 var(--serif);color:var(--vinho)}
+.admin-resumo-pendentes{border-left:3px solid #bd8a37}.admin-resumo-confirmados{border-left:3px solid #568463}.admin-resumo-cancelados{border-left:3px solid #a45660}.admin-resumo-total{border-left:3px solid #a97882}
+.admin-filtros{display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(150px,190px);align-items:center;gap:9px;margin:0 0 14px;padding:13px;border:1px solid rgba(100,31,50,.09);border-radius:14px;background:#fffaf7}
+.admin-filtros label{color:var(--cinza);font-size:11px;font-weight:700}
+.admin-filtros input,.admin-filtros select{min-width:0;min-height:41px;padding:9px 12px;border:1px solid rgba(100,31,50,.15);border-radius:10px;background:#fff;color:var(--tinta);font:inherit;font-size:12px}
+.admin-filtros input:focus,.admin-filtros select:focus{outline:3px solid rgba(201,134,146,.2);border-color:var(--rose)}
+.admin-pedido{transition:border-color .18s ease,box-shadow .18s ease}
+.admin-pedido:hover{border-color:rgba(100,31,50,.24);box-shadow:0 10px 24px rgba(61,17,31,.08)}
+.admin-pedido-topo time{display:grid;gap:4px}
+.admin-pedido-topo time span{font-size:14px;font-weight:700;color:var(--tinta)}
+.admin-situacao-requested{background:#fbf1db;color:#805c17}
+.admin-lista-vazia{grid-column:1/-1;margin:0;padding:25px 18px;border:1px dashed rgba(100,31,50,.2);border-radius:14px;background:#fff;color:var(--cinza);font-size:13px;text-align:center}
+.admin-atualizar:disabled{opacity:.6;cursor:wait}
+.admin-status-select[aria-busy="true"]{cursor:wait}
+@media(max-width:760px){.admin-resumo{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-filtros{grid-template-columns:1fr 1fr}.admin-busca-label{grid-column:1/-1}.admin-filtros input{grid-column:1/-1;grid-row:2}}
+@media(max-width:520px){.admin-resumo-card{min-height:66px;padding:12px}.admin-resumo-card span{font-size:11px}.admin-resumo-card strong{font-size:24px}.admin-filtros{grid-template-columns:1fr}.admin-busca-label,.admin-filtros input{grid-column:auto;grid-row:auto}.admin-pedidos-acoes{width:100%}.admin-atualizar{min-height:40px}}
+
 /* Perfil da cliente: cartões alinhados e controles com mais destaque visual. */
 .perfil-painel{
   border-color:rgba(100,31,50,.13);
