@@ -82,7 +82,23 @@ revoke all on table public.appointments from anon, authenticated;
 grant select, insert on table public.appointments to authenticated;
 grant update (status) on table public.appointments to authenticated;
 
-drop policy if exists "Clients can read their own appointment requests" on public.appointments;
+-- Políticas permissivas antigas se combinam com OR. Remova-as para que a
+-- política abaixo seja a única fonte de acesso a esta tabela.
+do $$
+declare
+  existing_policy record;
+begin
+  for existing_policy in
+    select policyname
+      from pg_policies
+     where schemaname = 'public'
+       and tablename = 'appointments'
+  loop
+    execute format('drop policy %I on public.appointments', existing_policy.policyname);
+  end loop;
+end;
+$$;
+
 create policy "Clients can read their own appointment requests"
   on public.appointments
   for select
@@ -92,7 +108,6 @@ create policy "Clients can read their own appointment requests"
     or coalesce((select auth.jwt()) -> 'app_metadata' ->> 'role', '') = 'admin'
   );
 
-drop policy if exists "Clients can create their own appointment requests" on public.appointments;
 create policy "Clients can create their own appointment requests"
   on public.appointments
   for insert
@@ -103,7 +118,6 @@ create policy "Clients can create their own appointment requests"
     and requested_date >= current_date
   );
 
-drop policy if exists "Studio admins can update appointment status" on public.appointments;
 create policy "Studio admins can update appointment status"
   on public.appointments
   for update
